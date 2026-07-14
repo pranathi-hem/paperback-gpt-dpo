@@ -1,97 +1,175 @@
-# paperback-gpt-dpo
+# Paperback-GPT-DPO
 
-A from-scratch GPT-style transformer — RoPE, flash attention, mixed precision training — trained on public-domain novels and aligned with a from-scratch implementation of Direct Preference Optimization (DPO).
+A decoder-only GPT-style transformer built entirely from scratch in PyTorch, featuring Rotary Positional Embeddings (RoPE), Flash Attention, mixed-precision training, and a manual implementation of Direct Preference Optimization (DPO).
 
-Built as a hands-on deep dive into modern LM training and alignment.
+The model is pretrained on a **25-book Project Gutenberg corpus (~13 million characters)** and then aligned using **self-generated preference pairs**, without relying on external RLHF or DPO libraries.
 
 ---
 
-## What's in here
-
-- **A GPT-style decoder-only transformer**, implemented from scratch in PyTorch:
-  - Rotary positional embeddings (RoPE), implemented from the ground up
-  - `torch.nn.functional.scaled_dot_product_attention` (flash attention) for the attention core
-  - Mixed-precision training (`torch.amp`) with gradient scaling
-  - Gradient clipping, weight tying between the embedding and output layers
-  - Cosine LR schedule with warmup
-- **Direct Preference Optimization (DPO)**, implemented from scratch:
-  - A frozen reference model (`ref_model`) snapshotted before alignment
-  - Preference pairs built by sampling multiple completions per prompt and scoring them by log-likelihood
-  - The DPO loss (Bradley-Terry-based, per [Rafailov et al., 2023](https://arxiv.org/abs/2305.18290)), trained without any external RL library
-- **A base-vs-DPO comparison harness** — generates completions from the pretrained and DPO-tuned checkpoints on the same held-out prompts, side by side.
-
-## Dataset
-
-Trained on a handful of public-domain novels, pulled directly from [Project Gutenberg](https://www.gutenberg.org/):
-
-- *Pride and Prejudice* — Jane Austen
-- *Alice's Adventures in Wonderland* — Lewis Carroll
-- *Frankenstein* — Mary Shelley
-- *Moby-Dick* — Herman Melville
-- *A Tale of Two Cities* — Charles Dickens
-
-Tokenized with the GPT-2 BPE tokenizer (`tiktoken`, `gpt2` encoding) — chosen deliberately over a character-level vocabulary, since the tokenizer's merge rules are built around properly-cased, punctuated English text like this.
-
-## Results: base vs. DPO-tuned completions
-
-Generations from the same pretrained checkpoint before and after DPO, on held-out prompts not used to build the preference pairs.
-
-> _Table below — fill in after the final training run._
-
-| Prompt | Base (pretrained) | DPO-tuned | Base score | DPO score |
-|---|---|---|---|---|
-| _sometimes life really is just_ | | | | |
-| _i dont see the point in_ | | | | |
-| _the thing about growing up is_ | | | | |
-| _it is a truth universally acknowledged that_ | | | | |
-| _curiouser and curiouser said_ | | | | |
-| _it was the best of whales, it was the_ | | | | |
-| _call me ishmael but honestly_ | | | | |
-
-**Score** is the average negative log-likelihood the *generating* model assigns to its own continuation (lower = the model was more confident in its own output). It's a rough sanity signal, not a preference-quality metric on its own — read the completions themselves for the real comparison.
-
 ## Architecture
 
-| | |
-|---|---|
-| Embedding dim | 256 |
-| Layers | 8 |
+| Component | Value |
+|-----------|------:|
+| Parameters | **19.2M** |
+| Transformer layers | 8 |
+| Embedding dimension | 256 |
 | Attention heads | 8 |
 | Context length | 128 |
 | Positional encoding | RoPE |
-| Vocab size | 50,257 (GPT-2 BPE) |
-| Parameters | ~[fill in] |
+| Vocabulary size | 50,257 (GPT-2 BPE) |
+
+---
+
+## Training Loss
+
+<p align="center">
+<img src="training_loss.png" width="650">
+</p>
+
+Cross-entropy loss during pretraining on the 25-book corpus.
+
+---
+
+## RoPE Ablation
+
+<p align="center">
+<img src="rope_vs_pe.png" width="650">
+</p>
+
+Validation loss comparison between Rotary Positional Embeddings (RoPE) and learned positional embeddings under identical training settings.
+
+---
+
+## Base vs. DPO-Tuned Generations
+
+Generations from the same pretrained checkpoint before and after DPO using held-out prompts.
+
+| Prompt | Base (Pretrained) | DPO-Tuned |
+|---------|-------------------|------------|
+| *Sometimes life really is just...* | *Shot somewhere less broad. I expected him to wish...* | *The same thing in a tolerable place without sending it away...* |
+| *I don't see the point in...* | *The business is done. Cross Campbells; therefore...* | *The wooden land, for they supposed...* |
+| *The thing about growing up is...* | *Splendid to her. Here I can't try to spare...* | *So delightful that I never became...* |
+| *It is a truth universally acknowledged...* | *Mr. Darcy's certainty might be puffing in the discovery...* | *Mr. Collins... it may be, however...* |
+| *Curiouser and curiouser said...* | *I don't doubt you, John...* | *That, as you had about this business...* |
+| *It was the best of whales...* | *Whale's emergency; whether for the Pequod...* | *Very dead sailor for Fielding...* |
+| *Call me Ishmael but honestly...* | *Shaking my face and frame...* | *Remember me much: I want as a family...* |
+
+> Preference pairs were generated automatically from the pretrained model rather than human annotations. These examples provide a qualitative comparison of generations before and after DPO.
+
+---
+
+## Features
+
+### GPT Pretraining
+
+- Decoder-only GPT architecture implemented entirely from scratch in PyTorch
+- Rotary Positional Embeddings (RoPE)
+- Flash Attention via `torch.nn.functional.scaled_dot_product_attention`
+- GPT-2 BPE tokenizer (`tiktoken`)
+- Mixed-precision training (`torch.amp`)
+- Weight tying between token embeddings and output projection
+- Cosine learning-rate decay with warmup
+- Gradient clipping
+- Google Drive checkpointing for long Colab sessions
+
+### Direct Preference Optimization (DPO)
+
+- Frozen reference model
+- Automatic preference pair generation
+- Manual implementation of the Bradley-Terry DPO objective
+- No Hugging Face TRL or RLHF libraries
+
+---
+
+## Dataset
+
+The model was trained on approximately **13 million characters** from **25 public-domain books**, downloaded directly from **Project Gutenberg**.
+
+Books include:
+
+- Pride and Prejudice
+- Emma
+- Sense and Sensibility
+- Alice's Adventures in Wonderland
+- Frankenstein
+- Moby-Dick
+- Dracula
+- Jane Eyre
+- Wuthering Heights
+- Great Expectations
+- A Tale of Two Cities
+- Adventures of Huckleberry Finn
+- The Adventures of Tom Sawyer
+- The Adventures of Sherlock Holmes
+- Treasure Island
+- Dr. Jekyll and Mr. Hyde
+- The Picture of Dorian Gray
+- The Wonderful Wizard of Oz
+- Grimm's Fairy Tales
+- Heart of Darkness
+- Metamorphosis
+- The Time Machine
+- The War of the Worlds
+- The Yellow Wallpaper
+- The Iliad
+
+The corpus is tokenized using the GPT-2 Byte Pair Encoding (BPE) tokenizer provided by `tiktoken`.
+
+---
 
 ## Training
 
-**Pretraining:**
-- Cosine LR schedule, warmup over 200 steps, peak LR 3e-4, min LR 3e-5
-- Mixed precision (fp16) with gradient scaling, gradient clipping at norm 2.0
-- Checkpointed to Google Drive to survive Colab disconnects
+### Pretraining
 
-**DPO:**
-- Preference pairs built by sampling 2 completions per prompt from the frozen reference model, scored by average log-probability, keeping (best, worst) pairs
-- Trained with `beta = 0.1`, following the standard DPO loss:
+- 5,000 optimization steps
+- AdamW optimizer
+- Peak learning rate: **3e-4**
+- Minimum learning rate: **3e-5**
+- Cosine learning-rate decay with 200 warmup steps
+- Mixed precision (FP16)
+- Gradient clipping (norm = 2.0)
 
+### Direct Preference Optimization
+
+- Frozen reference model copied from the pretrained checkpoint
+- Two completions sampled per prompt
+- Higher log-probability completion selected as the preferred response
+- DPO trained using β = 0.1
+- Batch size = 8
+
+The optimization objective is
+
+```text
+loss = -logsigmoid(β[(chosen_logratio) − (rejected_logratio)])
 ```
-loss = -logsigmoid(beta * [(chosen_logratio) - (rejected_logratio)])
-```
 
-where each logratio is `policy_logprob - reference_logprob` for the chosen/rejected completion.
+where each log-ratio is computed as the difference between the policy model and frozen reference model log-probabilities.
 
-## Running it
+---
 
-This project was built and run in Google Colab (GPU runtime). To reproduce:
+## Running the Project
 
-1. Mount Google Drive and set a checkpoint directory.
-2. Run the dataset-loading cell (pulls the novels directly from Project Gutenberg — no external dataset library required).
-3. Run pretraining. Set a unique `experiment_name` per run — checkpoints are keyed by this name, so changing the dataset or hyperparameters without updating it will silently reload a stale checkpoint instead of retraining.
-4. Run the DPO section — builds preference pairs from the pretrained model, then trains the policy against the DPO loss.
-5. Run the comparison cell to generate the base-vs-DPO table above.
+1. Mount Google Drive and specify a checkpoint directory.
+2. Download the Project Gutenberg corpus.
+3. Tokenize using the GPT-2 BPE tokenizer.
+4. Pretrain the GPT model.
+5. Freeze a copy as the reference model.
+6. Generate preference pairs.
+7. Train using the DPO objective.
+8. Generate comparison samples.
 
-## What I learned building this
+---
 
-- Implementing RoPE and flash-attention-based causal self-attention from scratch, and running a controlled ablation against learned positional embeddings.
-- Building the full DPO pipeline by hand: the Bradley-Terry preference model, why a frozen reference model is needed, and how causal masking lets you compute sequence log-probabilities in a single forward pass instead of token-by-token.
-- Diagnosing and fixing overfitting from a small training corpus by watching train/val loss divergence, rather than just trusting a low training loss.
-- Practical Colab/GPU debugging: RAM-safe dataset loading, CUDA OOM recovery after interrupted cells, and checkpointing strategies for a flaky free-tier runtime.
+## What I Learned
+
+- Building a decoder-only transformer entirely from scratch.
+- Implementing Rotary Positional Embeddings (RoPE).
+- Using Flash Attention for efficient causal self-attention.
+- Mixed-precision GPT training and modern optimization techniques.
+- Implementing Direct Preference Optimization (DPO) without external RLHF libraries.
+- Why DPO requires a frozen reference model and preference log-ratios.
+- Practical debugging of long-running GPU training in Google Colab, including checkpointing and recovering from memory issues.
+- Diagnosing overfitting through train/validation loss rather than relying solely on training loss.
+
+---
+
