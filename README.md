@@ -173,3 +173,11 @@ where each log-ratio is computed as the difference between the policy model and 
 
 ---
 
+## Future Work
+
+- Incorporate human-annotated preference datasets for more meaningful alignment.
+- Scale the model to larger parameter counts and training corpora.
+- Support longer context windows for improved long-range reasoning.
+- Explore instruction tuning prior to DPO.
+- Evaluate on standard language modeling benchmarks (e.g., HellaSwag, PIQA, ARC).
+
