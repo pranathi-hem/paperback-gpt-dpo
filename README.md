@@ -29,17 +29,6 @@ The model is pretrained on a **25-book Project Gutenberg corpus (~13 million cha
 Cross-entropy loss during pretraining on the 25-book corpus.
 
 ---
-
-## RoPE Ablation
-
-<p align="center">
-<img src="rope_vs_pe.png" width="650">
-</p>
-
-Validation loss comparison between Rotary Positional Embeddings (RoPE) and learned positional embeddings under identical training settings.
-
----
-
 ## Base vs. DPO-Tuned Generations
 
 Generations from the same pretrained checkpoint before and after DPO using held-out prompts.
