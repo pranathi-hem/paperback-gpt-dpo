@@ -164,10 +164,8 @@ where each log-ratio is computed as the difference between the policy model and 
 
 ## Limitations
 
-The preference pairs used for DPO were generated automatically from the pretrained model rather than collected from human annotators. As a result, the DPO stage primarily demonstrates a correct implementation of the preference optimization pipeline rather than learning human-aligned preferences.
+The preference pairs used for DPO were generated automatically from the pretrained model rather than collected from human annotators. As a result, the DPO stage primarily demonstrates a correct implementation of the preference optimization pipeline rather than learning human-aligned preferences.Consequently, improvements in generation quality are modest. Future work would involve training on human preference datasets or instruction-following data to better showcase the benefits of DPO.
 
-Consequently, improvements in generation quality are modest. Future work would involve training on human preference datasets or instruction-following data to better showcase the benefits of DPO.
----
 ## Future Work
 
 - Incorporate human-annotated preference datasets for more meaningful alignment.
