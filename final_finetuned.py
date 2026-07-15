@@ -269,15 +269,13 @@ def get_lr(step):
 
 
 
-model = RoPETransformerLM 
-(no_layers=n_layer).to(device)
+model = RoPETransformerLM(no_layers=n_layer).to(device)
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr)
 print("warmup_steps:", warmup_steps, "max_steps:", max_steps, "max_lr:", max_lr, "min_lr:", min_lr)
 print("n_embd:", n_embd, "block_size:", block_size, "no_heads:", no_heads, "n_layer:", n_layer)
 print("lr at iter 0:", get_lr(0), "lr at iter 100:", get_lr(100))
 max_iters = 5000
-
 
 
 pretrained_path = f"{checkpoint_dir}/{experiment_name}.pt"
