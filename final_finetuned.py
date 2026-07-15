@@ -82,6 +82,7 @@ def get_batch(split):
     x, y = x.to(device), y.to(device)
     return x, y
 
+#Hyperparameters
 n_embd = 256
 no_heads = 8
 n_layer = 8
@@ -207,7 +208,7 @@ scaler = torch.amp.GradScaler('cuda')
 #model
 import torch.nn as nn
 from torch.nn import functional as F
-class BigramLanguageModel(nn.Module):
+class RoPETransformerLM(nn.Module):
 
   def __init__(self,no_layers):
     super().__init__()
@@ -268,7 +269,8 @@ def get_lr(step):
 
 
 
-model = BigramLanguageModel(no_layers=n_layer).to(device)
+model = RoPETransformerLM 
+(no_layers=n_layer).to(device)
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr)
 print("warmup_steps:", warmup_steps, "max_steps:", max_steps, "max_lr:", max_lr, "min_lr:", min_lr)
